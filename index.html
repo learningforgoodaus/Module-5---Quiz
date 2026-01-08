@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 5: Knowledge Check</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Helvetica', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-light': '#C6B4D9',
+                        'brand-medium': '#9C7F9D',
+                        'brand-dark': '#513873',
+                        'brand-darker': '#413659',
+                        'brand-bg': '#f6f5f8',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Helvetica', 'Inter', sans-serif;
+        }
+        input[type="radio"]:checked,
+        input[type="checkbox"]:checked {
+            accent-color: #513873; 
+        }
+        input[type="radio"]:focus,
+        input[type="checkbox"]:focus {
+            outline: 2px solid #513873;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="bg-brand-bg min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white shadow-2xl rounded-xl p-6 md:p-8 max-w-2xl w-full" id="quiz-container">
+        
+        <div id="quiz-header">
+            <h1 class="text-2xl md:text-3xl font-bold text-brand-darker mb-2 uppercase tracking-tight">Module 5 Knowledge Check</h1>
+            <p class="text-sm text-gray-600 mb-6" id="question-counter">Question 1 of 4</p>
+        </div>
+
+        <div id="question-area">
+            <h2 class="text-xl font-semibold text-brand-darker mb-5" id="question-text"></h2>
+            
+            <div class="space-y-3" id="options-container">
+                <!-- Options will be injected here -->
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <p id="feedback-text" class="text-center font-semibold text-lg" aria-live="polite"></p>
+        </div>
+
+        <div class="mt-6 space-y-3">
+            <button id="check-btn" class="w-full bg-brand-dark text-white py-3 px-5 rounded-lg font-semibold hover:bg-brand-darker transition-colors focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+                Check Answer
+            </button>
+        </div>
+
+    </div>
+
+    <div id="correct-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden" aria-modal="true" role="dialog">
+        <div class="bg-white rounded-xl p-8 shadow-2xl text-center max-w-sm w-full border-t-8 border-brand-dark">
+            <h2 class="text-2xl font-bold text-brand-dark mb-6">Correct! Well done</h2>
+            <button id="next-btn" class="w-full bg-brand-dark text-white py-2.5 px-5 rounded-lg font-semibold hover:bg-brand-darker transition-colors focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+                Next Question
+            </button>
+        </div>
+    </div>
+
+    <div id="completion-screen" class="fixed inset-0 bg-brand-bg flex items-center justify-center p-4 hidden">
+        <div class="bg-white shadow-2xl rounded-xl p-8 md:p-10 max-w-2xl w-full text-center">
+            <h1 class="text-3xl font-bold text-brand-darker mb-4">Quiz Complete!</h1>
+            <p class="text-xl text-gray-700">You have successfully completed the Module 5 Knowledge Check on Safety, Transport, and Accommodation.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. DEFINE QUIZ DATA ---
+            const quizData = [
+                // Q1: Single Answer - Transport
+                {
+                    question: "What is the primary safety reason for suggesting Uber or Taxi vouchers to a victim-survivor?",
+                    type: "radio", 
+                    options: [
+                        { text: "They are cheaper than using a private vehicle", id: "q1_a" },
+                        { text: "To prevent a digital travel history from appearing on shared bank accounts or apps", id: "q1_b" },
+                        { text: "Because public transport in Australia is generally unreliable", id: "q1_c" },
+                        { text: "To ensure they arrive at work faster", id: "q1_d" }
+                    ],
+                    correct: ["q1_b"]
+                },
+                // Q2: Multiple Answers - Digital/Workplace Safety
+                {
+                    question: "Which of the following are effective workplace safety planning suggestions? (Select all that apply)",
+                    type: "checkbox", 
+                    options: [
+                        { text: "Removing personal mobile numbers from public-facing staff directories", id: "q2_a" },
+                        { text: "Changing desk locations to a more secure or restricted area", id: "q2_b" },
+                        { text: "Publicly posting the survivor's work schedule for team transparency", id: "q2_c" },
+                        { text: "Identifying a lockable 'safe room' at the workplace with a window exit", id: "q2_d" }
+                    ],
+                    correct: ["q2_a", "q2_b", "q2_d"]
+                },
+                // Q3: Multiple Answers - Safety Anchors
+                {
+                    question: "Which practical 'safety anchors' can a responder suggest for the survivor to manage privately? (Select all that apply)",
+                    type: "checkbox", 
+                    options: [
+                        { text: "Updating authorised school/childcare pickup lists immediately", id: "q3_a" },
+                        { text: "Confronting the perpetrator to tell them the relationship is over", id: "q3_b" },
+                        { text: "Preparing a 'Go-Bag' with essential IDs and legal documents", id: "q3_c" },
+                        { text: "Establishing a natural-sounding code word for emergencies", id: "q3_d" }
+                    ],
+                    correct: ["q3_a", "q3_c", "q3_d"]
+                },
+                // Q4: Single Answer - Housing
+                {
+                    question: "In the 3-step housing model, which stage is designed to act as a 12 to 18-month 'bridge' toward regaining financial independence?",
+                    type: "radio", 
+                    options: [
+                        { text: "Crisis Accommodation (Refuges)", id: "q4_a" },
+                        { text: "Private Rental Market", id: "q4_b" },
+                        { text: "Transitional Housing", id: "q4_c" },
+                        { text: "Staying Home Leaving Violence program", id: "q4_d" }
+                    ],
+                    correct: ["q4_c"]
+                }
+            ];
+
+            // --- 2. GET ELEMENT REFERENCES ---
+            const quizContainer = document.getElementById('quiz-container');
+            const questionCounter = document.getElementById('question-counter');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const checkBtn = document.getElementById('check-btn');
+            const nextBtn = document.getElementById('next-btn'); 
+            const feedbackText = document.getElementById('feedback-text');
+            const correctModal = document.getElementById('correct-modal');
+            const completionScreen = document.getElementById('completion-screen');
+
+            // --- 3. STATE VARIABLES ---
+            let currentQuestionIndex = 0;
+
+            // --- 4. FUNCTIONS ---
+
+            function loadQuestion(index) {
+                const question = quizData[index];
+                
+                // Update text
+                questionCounter.textContent = `Question ${index + 1} of ${quizData.length}`;
+                questionText.textContent = question.question;
+                
+                // Clear old options and feedback
+                optionsContainer.innerHTML = '';
+                feedbackText.textContent = '';
+                feedbackText.className = 'text-center font-semibold text-lg'; 
+
+                // Create and append new options
+                question.options.forEach(option => {
+                    const optionId = option.id;
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'border border-gray-200 rounded-lg transition-all hover:bg-brand-light/20';
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = optionId;
+                    label.className = 'flex items-center p-3 cursor-pointer w-full';
+                    
+                    label.innerHTML = `<input type="${question.type}" id="${optionId}" name="question_${index}" value="${optionId}" class="mr-3 flex-shrink-0">
+                                       <span class="flex-1">${option.text}</span>`;
+                    
+                    wrapper.appendChild(label);
+                    optionsContainer.appendChild(wrapper);
+                });
+
+                // Reset button states
+                checkBtn.classList.remove('hidden');
+            }
+
+            function checkAnswer() {
+                const question = quizData[currentQuestionIndex];
+                const selectedInputs = optionsContainer.querySelectorAll('input:checked');
+                
+                if (selectedInputs.length === 0) {
+                     feedbackText.textContent = "Please select at least one answer.";
+                     feedbackText.classList.add('text-red-600');
+                     return;
+                }
+
+                let selectedAnswers = [];
+                selectedInputs.forEach(input => {
+                    selectedAnswers.push(input.value);
+                });
+
+                const correctAnswers = [...question.correct].sort();
+                selectedAnswers.sort();
+
+                const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+                if (isCorrect) {
+                    feedbackText.textContent = '';
+                    feedbackText.className = 'text-center font-semibold text-lg';
+                    
+                    correctModal.classList.remove('hidden');
+                    checkBtn.classList.add('hidden');
+
+                    if (currentQuestionIndex === quizData.length - 1) {
+                        nextBtn.textContent = "Finish Quiz";
+                    }
+
+                } else {
+                    feedbackText.textContent = "Incorrect. Please review the options and try again.";
+                    feedbackText.classList.add('text-red-600');
+                    correctModal.classList.add('hidden');
+                }
+            }
+
+            function nextQuestion() {
+                correctModal.classList.add('hidden');
+
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    loadQuestion(currentQuestionIndex);
+                } else {
+                    quizContainer.classList.add('hidden');
+                    completionScreen.classList.remove('hidden');
+                }
+            }
+
+            // --- 5. INITIALIZE & EVENT LISTENERS ---
+            loadQuestion(currentQuestionIndex);
+
+            checkBtn.addEventListener('click', checkAnswer);
+            nextBtn.addEventListener('click', nextQuestion);
+        });
+    </script>
+</body>
+</html>
